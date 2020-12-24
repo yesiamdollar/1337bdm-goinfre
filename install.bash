@@ -4,6 +4,7 @@ GOINFRE=/goinfre/$USER
 BREW_PATH=$GOINFRE/.brew
 BREW_OLD=$HOME/.brew
 BREW_EXEC=$BREW_PATH/bin/brew
+
 if [ ! -d $BREW_PATH ]; then
 	if [ -d $BREW_OLD ]; then
 		rm -rf $BREW_OLD
@@ -35,10 +36,17 @@ if [ ! -d $KUBE_PATH ]; then
 fi
 
 ZSHRC_FILE=$HOME/.zshrc
-IFS=$'\n' read -d '' -r -a lines < $ZSHRC_FILE
+READ_ZSHRC=$ZSHRC_FILE
+
+if [ ! -f $ZSHRC_FILE ]; then
+	READ_ZSHRC=$PWD/zshrc	
+fi
+
+IFS=$'\n' read -d '' -r -a lines < $READ_ZSHRC
+
 if [ -f $ZSHRC_FILE ]; then 
 		rm -rf $ZSHRC_FILE & touch $ZSHRC_FILE
-	else
+else
 		touch $ZSHRC_FILE
 fi
 for i in "${lines[@]}"; do 
@@ -49,8 +57,28 @@ for i in "${lines[@]}"; do
 	fi
 done
 
-if [[ "${lines[@]}" =~ "Code" ]] || [[ "${lines[@]}" =~ "code" ]]; then
-	echo exist
-else
+if [[ ! "${lines[@]}" =~ "Code" ]] && [[ ! "${lines[@]}" =~ "code"  ]]; then
 	echo 'export PATH="$PATH:/Applications/Visual Studio Code.app/Contents/Resources/app/bin"' >> $ZSHRC_FILE
 fi
+
+if [[ ! "${lines[@]}" =~ "MINIKUBE_HOME" ]]; then
+	echo 'export MINIKUBE_HOME=$HOME/goinfre/.minikube' >> $ZSHRC_FILE
+fi
+
+if [[ ! "${lines[@]}" =~ "MACHINE_STORAGE_PATH" ]]; then
+	echo 'export MACHINE_STORAGE_PATH=$HOME/goinfre/.docker' >> $ZSHRC_FILE
+fi
+
+
+NASM_EXEC=/usr/bin/nasm
+
+$NASM_EXEC 2> nasm_check
+
+IFS=$'\n' read -d '' -r -a C_NASM < nasm_check
+
+if [[ "${C_NASM[@]}" =~ "error" ]];then
+	$BREW_EXEC install nasm
+fi
+
+$BREW_EXEC cleanup
+source ~/.zshrc
