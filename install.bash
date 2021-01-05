@@ -29,6 +29,7 @@ if [ ! -d $KUBE_PATH ]; then
 	if [ -d $KUBE_OLD ]; then
 		rm -rf $KUBE_OLD
 	fi
+	$BREW_EXEC install minikube kubectl
 	mkdir $KUBE_PATH
 	cd $HOME
 	ln -s $KUBE_PATH .
